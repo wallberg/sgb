@@ -1,7 +1,7 @@
-From 8401b780740754c257f0226167ed962a4fd0d3cf Mon Sep 17 00:00:00 2001
+From 4adf38df0f38ab03f6b858c6e7a7fa0bd2c88fa3 Mon Sep 17 00:00:00 2001
 From: Andreas Scherer <andreas_github@freenet.de>
 Date: Tue, 10 Jan 2017 10:19:52 +0100
-Subject: [PATCH 11/15] Fix compiler warnings when optimizing.
+Subject: [PATCH 11/16] Fix compiler warnings when optimizing.
 
 'gcc -O' issues a few extra warnings.
 ---
@@ -92,5 +92,5 @@ index 7cdc564..0d9e096 100644
  qenque(h,a)
    Arc *h; /* header of a binomial queue */
 -- 
-2.20.1
+2.21.0
 

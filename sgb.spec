@@ -50,6 +50,7 @@ Patch12: 0012-Fix-issue-4-prefix-is-too-short.patch
 Patch13: 0013-Try-to-fix-INF-inity.patch
 Patch14: 0014-Retain-code-layout.patch
 Patch15: 0015-Check-bit-length-of-operands-earlier.patch
+Patch16: 0016-Interface-check-for-GB_WORDS.patch
 %endif
 
 %description

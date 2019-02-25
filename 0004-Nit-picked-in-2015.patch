@@ -1,7 +1,7 @@
-From 2041061c48bc58b04891d49a5689d7938093239c Mon Sep 17 00:00:00 2001
+From 20b0914518d47964e1287ae05ac65f1d8e82a1a2 Mon Sep 17 00:00:00 2001
 From: Andreas Scherer <andreas_github@freenet.de>
 Date: Thu, 6 Aug 2015 00:00:00 +0200
-Subject: [PATCH 04/15] Nit picked in 2015.
+Subject: [PATCH 04/16] Nit picked in 2015.
 
 ---
  gb_words.w | 2 +-
@@ -21,5 +21,5 @@ index 994055f..94a049a 100644
  
  @d hash_prime 6997 /* a prime number larger than the total number of words */
 -- 
-2.20.1
+2.21.0
 

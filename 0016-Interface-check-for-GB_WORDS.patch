@@ -1,0 +1,181 @@
+From 56334cc0316bd0c542875eedacb004d2038f0979 Mon Sep 17 00:00:00 2001
+From: debbuild <debbuild>
+Date: Mon, 25 Feb 2019 19:49:32 +0100
+Subject: [PATCH 16/16] Interface check for GB_WORDS.
+
+A C/C++ module has to include its own interface as the first non-trivial
+statement.  For GB_WORDS, this means a shift in responsibility for other
+interfaces: Graph and Vertex are typedefs, so we must include gb_graph.h
+in gb_words.
+
+Compiling the code with 'make -e CC=g++ gb_io.o gb_words.o' leads to
+further changes that improve the 'const correctness' in both interfaces.
+
+This is great fun!  Let's go further ASAP.
+
+Running 'make tests' leads to the first 'include guards'.
+---
+ PROTOTYPES/gb_graph.ch |  9 +++++++++
+ PROTOTYPES/gb_io.ch    | 25 ++++++++++++++++++++-----
+ PROTOTYPES/gb_words.ch | 29 +++++++++++++++++++++++++++++
+ 3 files changed, 58 insertions(+), 5 deletions(-)
+
+diff --git a/PROTOTYPES/gb_graph.ch b/PROTOTYPES/gb_graph.ch
+index f703b50..637842f 100644
+--- a/PROTOTYPES/gb_graph.ch
++++ b/PROTOTYPES/gb_graph.ch
+@@ -4,6 +4,14 @@ int main()
+ int main(void)
+ @z
+ 
++@x l.63
++@(gb_graph.h@>=
++@y
++@(gb_graph.h@>=
++#ifndef GB_GRAPH_H
++#define GB_GRAPH_H 1
++@z
++
+ @x l.266
+ char *gb_alloc(n,s)
+   long n; /* number of consecutive bytes desired */
+@@ -188,6 +196,7 @@ extern void hash_setup(Graph *);
+    /* create a hash table for a given graph */
+ extern Vertex* hash_lookup(char *,Graph *);
+    /* find a name in a given graph */
++#endif /* |GB_GRAPH_H| */
+ @z
+ 
+ @x l.855
+diff --git a/PROTOTYPES/gb_io.ch b/PROTOTYPES/gb_io.ch
+index acbcb70..16552f6 100644
+--- a/PROTOTYPES/gb_io.ch
++++ b/PROTOTYPES/gb_io.ch
+@@ -4,6 +4,14 @@ int main()
+ int main(void)
+ @z
+ 
++@x l.85
++@ @(gb_io.h@>=
++@y
++@ @(gb_io.h@>=
++#ifndef GB_IO_H
++#define GB_IO_H 1
++@z
++
+ @x l.123
+ static void fill_buf()
+ @y
+@@ -14,7 +22,7 @@ static void fill_buf(void)
+ static char *imap="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+ abcdefghijklmnopqrstuvwxyz_^~&@@,;.:?!%#$+-*/|\\<=>()[]{}`'\" \n";
+ @y
+-static char *imap=
++static const char *imap=
+    "0123456789"@|
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"@|
+    "abcdefghijklmnopqrstuvwxyz"@|
+@@ -63,6 +71,12 @@ static void icode_setup()
+ static void icode_setup(void)
+ @z
+ 
++@x l.215
++  register char *p;
++@y
++  register const char *p;
++@z
++
+ @x l.217
+   for (p=imap,k=0; *p; p++,k++) icode[*p]=k;
+ @y
+@@ -182,8 +196,8 @@ char *gb_string(@t\1\1@>
+ extern void gb_raw_open(); /* open a file for GraphBase input */
+ extern long gb_open(); /* open a GraphBase data file; return 0 if OK */
+ @y
+-extern void gb_raw_open(char *); /* open a file for GraphBase input */
+-extern long gb_open(char *); /* open a GraphBase data file; return 0 if OK */
++extern void gb_raw_open(const char *); /* open a file for GraphBase input */
++extern long gb_open(const char *); /* open a GraphBase data file; return 0 if OK */
+ @z
+ 
+ @x l.431
+@@ -191,7 +205,7 @@ void gb_raw_open(f)
+     char *f;
+ @y
+ void gb_raw_open(
+-    char *f)
++    const char *f)
+ @z
+ 
+ @x l.463
+@@ -199,7 +213,7 @@ long gb_open(f)
+     char *f;
+ @y
+ long gb_open(
+-    char *f)
++    const char *f)
+ @z
+ 
+ @x l.534
+@@ -214,6 +228,7 @@ extern long gb_raw_close(); /* close file and return the checksum */
+ @y
+ extern long gb_close(void); /* close a GraphBase data file; return 0 if OK */
+ extern long gb_raw_close(void); /* close file and return the checksum */
++#endif /* |GB_IO_H| */
+ @z
+ 
+ @x l.571
+diff --git a/PROTOTYPES/gb_words.ch b/PROTOTYPES/gb_words.ch
+index 45c2b3f..345595d 100644
+--- a/PROTOTYPES/gb_words.ch
++++ b/PROTOTYPES/gb_words.ch
+@@ -2,10 +2,25 @@
+ extern Graph *words();
+ extern Vertex *find_word();
+ @y
++#ifndef GB_WORDS_H
++#define GB_WORDS_H 1
++#include "gb_graph.h" /* we will use the {\sc GB\_\,GRAPH} data structures */
+ extern Graph *words(unsigned long,long [],long,long);
+ extern Vertex *find_word(char *,void (*)(Vertex *));
+ @z
+ 
++@x l.152
++#include "gb_io.h" /* we will use the {\sc GB\_\,IO} routines for input */
++@y
++#include "gb_words.h" /* include our own interface first */
++#include "gb_io.h" /* we will use the {\sc GB\_\,IO} routines for input */
++@z
++
++@x l.155
++#include "gb_graph.h" /* we will use the {\sc GB\_\,GRAPH} data structures */
++@y
++@z
++
+ @x l.162
+ Graph *words(n,wt_vector,wt_threshold,seed)
+   unsigned long n; /* maximum number of vertices desired */
+@@ -36,6 +51,20 @@ static long iabs(
+   long x)
+ @z
+ 
++@x l.418
++@d weight u.I /* weighted frequencies */
++@d loc a.I /* index of difference (0, 1, 2, 3, or 4) */
++
++@(gb_words.h@>=
++#define weight @[u.I@] /* repeat the definitions in the header file */
++#define loc @[a.I@]
++@y
++@(gb_words.h@>=
++#define weight @[u.I@] /* weighted frequencies */
++#define loc @[a.I@] /* index of difference (0, 1, 2, 3, or 4) */
++#endif /* |GB_WORDS_H| */
++@z
++
+ @x l.426
+ if (n==0 || nn<n)
+ @y
+-- 
+2.21.0
+
